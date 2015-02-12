@@ -1,0 +1,122 @@
+/*********************************
+
+ Lorenzo Luciano
+ 
+*********************************/
+
+/*********************************
+	male-female.
+*********************************
+ 	x = me.
+	w= widow.
+	d= daugther of w
+	f = father of x
+	s1 = son of x and w
+	s2 = son of w and f
+**********************************/
+male(x).
+male(f).
+male(s1).
+male(s2).
+
+female(w).
+female(d).
+
+/**********************************
+	father-mother
+**********************************/
+father1(f,x).
+
+mother1(w,d).
+
+father1(x,s1).
+mother1(w,s1).
+
+father1(f,s2).
+mother1(d,s2).
+
+
+/**********************************
+ married
+**********************************/
+
+married1(x,w).
+
+married1(f,d).
+
+married(X,Y):-
+	married1(X,Y);
+	married1(Y,X).
+
+/**********************************
+ relationships
+**********************************/
+
+
+mother(X,Y):-
+	mother1(X,Y);                                %  if mother
+	(married(Y,Z),mother1(X,Z));      %  if mother in law
+	(married(X,Z),father1(Z,Y)).	%   if step mother
+
+
+father(X,Y):-
+	father1(X,Y);		% if father
+	(married(Y,Z),father1(X,Z));	% if father in law
+	(married(X,Z),mother1(Z,Y)).	% if step father
+
+
+parent(X,Y):-
+	father(X,Y);mother(X,Y).
+
+parent(X,Y):-
+	married(X,Z),		% if married
+	 (father(Z,Y);mother(Z,Y)).	% and he/she has a child
+
+grandfather(X,Y):-
+	father(X,Z),
+	parent(Z,Y).
+
+sonInLaw(X,Y):-
+	married(X,Z),
+	parent(Y,Z),
+	male(X).
+
+brotherInLaw1(X,Y):-			% if you are married to someone
+	married(X,Z),		% and you are male, then
+	parent(A,Z),		% you are the brother in law
+	parent(A,Y),		% to the siblings of whoever you are married to.
+	male(X).
+
+brotherInLaw(X,Y):-
+	brotherInLaw1(X,Y);		% if condition 1, or 
+	(male(X), brotherInLaw1(Y,X)).	% if you are male and have a brother in law, then
+				% you are their brother in law.
+
+uncle(X,Y):-
+	parent(Z,Y),
+	parent(A,Z),
+	parent(A,X),
+	male(X).
+
+/**********************************************************************************
+
+ Sample Output
+
+********************
+ 
+ 2 ?- grandfather(x,x).
+
+ Yes
+
+ 5 ?- 
+ |    grandfather(x,X).
+
+ X = s2 ;
+
+ X = x 
+
+ Yes
+
+***************************************************************************************/
+
+
