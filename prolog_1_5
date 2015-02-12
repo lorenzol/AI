@@ -1,0 +1,110 @@
+/*********************************
+
+ Lorenzo Luciano
+
+*********************************/
+
+/*******************************************
+  Most General Unifier of 2 expressions
+******************************************/
+
+/ ******************************************
+  Enter as 2 variables/constants
+	i.e  mgu(a,X).
+
+  Or enter as a 2 lists.
+	i.e mgu([a,X], [Y,b])
+	i.e mgu([a,X,c], [Y,b,Z])
+
+*******************************************/
+
+% Check if X is equal to Y
+mgu(X,Y) :- X == Y.		%  if X=Y, then TRUE.
+
+% Check if X and Y are both variable
+mgu(X,Y) :- 
+	var(X), 
+	var(Y), 
+	X=Y.		% If X and Y are both variable, then TRUE. 	
+
+ %  If X is a variable and Y is a constant.
+mgu(X,Y) :- 
+	var(X), 
+	nonvar(Y), 
+	\+ happens_in(X,Y), 
+	X=Y.
+
+ % If X is a constant and Y is a variable  
+mgu(X,Y) :- 
+	var(Y),
+	nonvar(X), 
+	\+ happens_in(Y,X), 
+	Y=X.
+
+% If X and Y are both constants  
+mgu(X,Y) :- 
+	nonvar(X), 
+	nonvar(Y), 
+	functor(X,F,N), 
+	functor(Y,F,N),
+	X =..[F|R], 
+	Y =..[F|T], 
+	check_lists(R,T).
+
+% If lists are empy, end
+check_lists([],[]).
+
+% Check mgu of first variables/constants of list, and then remainder of lists recusively.
+check_lists([X|R],[H|T]) :- 
+	mgu(X,H), 
+	check_lists(R,T).
+
+
+% If X is equal to Y, then TRUE.
+happens_in(X,Y) :- X == Y.
+
+
+% Does it happen?
+happens_in(X,Y) :- 
+	nonvar(Y), 
+	functor(Y,F,N), 
+	happens_in(X,Y,N).
+
+happens_in(X,Y,N) :- 
+	N > 0, 
+	arg(N,Y,XN), 
+	happens_in(X,XN),!. 
+
+happens_in(X,Y,N1) :- 
+	N1 > 0, 
+	N1 is N1 - 1, 
+	happens_in(X,Y,N).
+
+
+/************************
+ Sample Output
+*************************
+
+12 ?- 
+|    mgu(a,X).
+
+X = a 
+
+Yes
+14 ?- mgu([a,X],[Y,b]).
+
+X = b
+Y = a 
+
+Yes
+15 ?- mgu([a,b,X],[Y,Z,c]).
+
+X = c
+Y = a
+Z = b 
+
+Yes
+
+**************************
+ End Sample Output
+*************************/
